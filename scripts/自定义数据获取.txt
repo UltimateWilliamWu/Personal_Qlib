@@ -1,0 +1,32 @@
+以获取美股为例 使用qlib自带脚本
+1.获取要爬取的股票数据 limit_nums限制数量 终端在scripts\data_collector\yahoo目录
+ 将需要拉去的股票名称symbol文件放在同样目录下
+ python collector.py download_data --source_dir ~/.qlib/stock_data/source/us_data --start 2010-01-01 --end 2025-04-25 --delay 1 --interval 1d --region US
+2.归一化数据 终端同1
+ python collector.py normalize_data --qlib_data_1d_dir ~/.qlib/qlib_data/us_data --source_dir ~/.qlib/stock_data/source/us_data --normalize_dir ~/.qlib/stock_data/source/us_data_norm --region US --interval 1d
+3.转为bin文件 终端在scripts文件夹
+ python dump_bin.py dump_all --csv_path ~/.qlib/stock_data/source/us_data_norm --qlib_dir ~/.qlib/qlib_data/us_data --freq day --exclude_fields date,symbol
+4.手动更新数据 终端在根目录
+ python scripts/data_collector/yahoo/collector.py update_data_to_bin --qlib_data_1d_dir <user data dir> --end_date <end date>
+qlib_data_1d_dir：要为 Yahoo 更新的 qlib 数据，通常来自：下载 qlib 数据
+end_date：结束日期时间，默认pd.Timestamp(trading_date + pd.Timedelta(days=1))；开放间隔（不包括结束）
+
+ python scripts/data_collector/yahoo/collector.py update_data_to_bin --qlib_data_1d_dir C:\Users\22363\.qlib\qlib_data\us_data --end_date 2025-04-07 --source_dir C:\Users\22363\.qlib\stock_data\source\us_data --normalize_dir C:\Users\22363\.qlib\stock_data\source\us_data_norm --region US
+
+
+ 方式一 获取现成A股数据
+wget https://github.com/chenditc/investment_data/releases/latest/download/qlib_bin.tar.gz
+mkdir -p ~/.qlib/qlib_data/cn_data/
+tar -zxvf qlib_bin.tar.gz -C ~/.qlib/qlib_data/cn_data/ --strip-components=2
+rm -f qlib_bin.tar.gz
+
+ 方式二 自定义获取 使用qlib脚本 但是自定义symbol文件
+在collector文件中定位
+class YahooCollectorUS(YahooCollector, ABC):
+    def get_instrument_list(self):
+获取美股数据的txt文件
+class YahooCollectorCN(YahooCollector, ABC):
+    def get_instrument_list(self):
+获取A股数据的txt文件
+ 方式三 使用个人编写脚本获取
+ 使用get_data_us 和 get_data_cn 获取数据 并通过qlib脚本执行步骤2-3
