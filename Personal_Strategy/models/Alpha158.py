@@ -7,14 +7,15 @@ import pandas as pd
 import qlib
 import os
 import joblib
+import lightgbm as lgb
 
 label = ["Ref($close, -5)/$close - 1"]
 qlib_url = "C:\\Users\\22363\\.qlib\\qlib_data\\cn_data"
 instruments_para = "csi800"
 MODEL_PATH = "results/lgb_model_CSI800.pkl"
 start_date = "2020-01-01"
-end_date = "2025-09-03"
-predict_date = "2025-09-04"
+end_date = "2025-09-11"
+predict_date = "2025-09-12"
 region = "cn"
 
 
@@ -140,6 +141,6 @@ if __name__ == "__main__":
     print(df_0414.head(20))
 
     # ✅ 查询指定股票的 signal
-    stock_list = ["SZ002008", "SZ300418", "SZ002230", "SZ002050", "SZ300866", "SZ300458"]
-    signal_df = get_signals_for_stocks(pred_signal, stock_list)
-    print(f"\n📊 查询股票的预测 signal:\n{signal_df}")
+    # stock_list = ["SZ002008", "SZ300418", "SZ002230", "SZ002050", "SZ300866", "SZ300458"]
+    # signal_df = get_signals_for_stocks(pred_signal, stock_list)
+    # print(f"\n📊 查询股票的预测 signal:\n{signal_df}")

@@ -1,12 +1,6 @@
 #  Copyright (c) Microsoft Corporation.
 #  Licensed under the MIT License.
-"""
-Qlib provides two kinds of interfaces.
-(1) Users could define the Quant research workflow by a simple configuration.
-(2) Qlib is designed in a modularized way and supports creating research workflow by code just like building blocks.
 
-The interface of (1) is `qrun XXX.yaml`.  The interface of (2) is script like this, which nearly does the same thing as `qrun XXX.yaml`
-"""
 import qlib
 from qlib.constant import REG_CN
 from qlib.utils import init_instance_by_config, flatten_dict
@@ -17,11 +11,16 @@ from qlib.tests.config import CSI300_BENCH, CSI300_GBDT_TASK
 
 
 if __name__ == "__main__":
-    # use default data
-    provider_uri = "~/.qlib/qlib_data/cn_data"  # target_dir
+    # =====================
+    # 1. 初始化数据和 Qlib
+    # =====================
+    provider_uri = "~/.qlib/qlib_data/cn_data"  # 数据路径
     GetData().qlib_data(target_dir=provider_uri, region=REG_CN, exists_skip=True)
     qlib.init(provider_uri=provider_uri, region=REG_CN)
 
+    # =====================
+    # 2. 初始化模型和数据集
+    # =====================
     model = init_instance_by_config(CSI300_GBDT_TASK["model"])
     dataset = init_instance_by_config(CSI300_GBDT_TASK["dataset"])
 
@@ -59,27 +58,28 @@ if __name__ == "__main__":
         },
     }
 
-    # NOTE: This line is optional
-    # It demonstrates that the dataset can be used standalone.
-    example_df = dataset.prepare("train")
-    print(example_df.head())
-
-    # start exp
+    # =====================
+    # 3. 开始实验
+    # =====================
     with R.start(experiment_name="workflow"):
+        # 记录配置
         R.log_params(**flatten_dict(CSI300_GBDT_TASK))
-        model.fit(dataset)
-        R.save_objects(**{"params.pkl": model})
 
-        # prediction
+        # 训练模型
+        model.fit(dataset)
+
+        # 🔑 保存训练好的模型
+        R.save_objects(model=model)
+
+        # 保存预测信号
         recorder = R.get_recorder()
         sr = SignalRecord(model, dataset, recorder)
         sr.generate()
 
-        # Signal Analysis
+        # 保存信号分析
         sar = SigAnaRecord(recorder)
         sar.generate()
 
-        # backtest. If users want to use backtest based on their own prediction,
-        # please refer to https://qlib.readthedocs.io/en/latest/component/recorder.html#record-template.
+        # 保存回测结果
         par = PortAnaRecord(recorder, port_analysis_config, "day")
         par.generate()
